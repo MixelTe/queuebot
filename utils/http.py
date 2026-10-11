@@ -50,9 +50,10 @@ def register_http(app):
 
     @app.route("/api/ping", methods=["GET", "POST"])
     def ping():
-        token = request.headers.get("X-Queuebot-Ping-Token", "") or request.args.get("token", "")
-        expected = bafser_config.ping_token
-        if not expected or not hmac.compare_digest(token.encode(), expected.encode()):
-            return "Forbidden", 403
+        if bafser_config.ping_auth_required:
+            token = request.headers.get("X-Queuebot-Ping-Token", "") or request.args.get("token", "")
+            expected = bafser_config.ping_token
+            if not expected or not hmac.compare_digest(token.encode(), expected.encode()):
+                return "Forbidden", 403
         clear_due_queues(app)
         return "ok"

@@ -81,6 +81,7 @@ class BotTests(unittest.TestCase):
         bafser_config.db_dev_path = str(root / "test.db")
         bafser_config.update_lock_path = str(root / "updates.lock")
         bafser_config.ping_token = "test-ping"
+        bafser_config.ping_auth_required = True
         cls.app, run = create_app("test_queuebot", AppConfig(DEV_MODE=True))
         errors = logging.StreamHandler()
         errors.setLevel(logging.ERROR)
@@ -709,6 +710,29 @@ class BotTests(unittest.TestCase):
             self.assertEqual(client.get("/api/ping?token=test-ping").status_code, 200)
             self.assertEqual(client.post("/api/ping", headers={"X-Queuebot-Ping-Token": "test-ping"}).status_code, 200)
         self.assertEqual(self.users(queue_id), [])
+
+    def test_ping_without_authorization_clears_only_due_queues(self):
+        queue_id, _ = self.queue()
+        self.callback(f"queue_enter {queue_id}")
+        with db_session.create_session() as session:
+            queue = session.get(Queue, queue_id)
+            queue.clear_at = 10000
+            queue.cleared_at = datetime(2000, 1, 1)
+            session.commit()
+        with patch.object(bafser_config, "ping_auth_required", False), \
+                patch.object(bafser_config, "ping_token", ""), self.app.test_client() as client, \
+                patch("threading.Thread.start", side_effect=AssertionError("no background tasks")):
+            self.assertEqual(client.get("/api/ping").status_code, 200)
+            self.assertEqual(self.users(queue_id), [])
+            self.callback(f"queue_enter {queue_id}")
+            self.assertEqual(client.post("/api/ping").status_code, 200)
+            self.assertEqual(self.users(queue_id), [(101, 0, 0)])
+
+    def test_public_ping_ignores_tokens_and_keeps_webhook_authorization(self):
+        with patch.object(bafser_config, "ping_auth_required", False), self.app.test_client() as client:
+            self.assertEqual(client.get("/api/ping?token=wrong").status_code, 200)
+            self.assertEqual(client.post("/api/ping", headers={"X-Queuebot-Ping-Token": "wrong"}).status_code, 200)
+            self.assertEqual(client.post("/webhook", json={"update_id": 100}).status_code, 403)
 
     def test_group_names_are_scoped_and_refresh_queue_notifications(self):
         first, _ = self.queue()

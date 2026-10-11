@@ -22,6 +22,7 @@ for key in ("log_info_path", "log_requests_path", "log_errors_path", "log_fronte
     setattr(bafser_config, key, str(root / key))
 bafser_config.update_lock_path = str(root / "updates.lock")
 bafser_config.ping_token = "test-ping"
+bafser_config.ping_auth_required = True
 bafser_config.config_path = str(root / "config.txt")
 Path(bafser_config.config_path).write_text(
     "bot_token = fake\\nbot_name = @TestQueueBot\\nwebhook_token = test-secret\\nurl = https://example.com/\\n")

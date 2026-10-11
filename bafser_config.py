@@ -32,6 +32,7 @@ config_dev_path = "config_dev.txt"
 queue_timezone = os.environ.get("QUEUE_TIMEZONE", "Europe/Moscow")
 update_lock_path = "storage/updates.lock"
 ping_token = os.environ.get("PING_TOKEN", "")
+ping_auth_required = os.environ.get("PING_AUTH_REQUIRED", "1") != "0"
 bot_mode = os.environ.get("BOT_MODE", "polling")
 bot_host = os.environ.get("BOT_HOST", "127.0.0.1")
 bot_port = int(os.environ.get("BOT_PORT", "5000"))
