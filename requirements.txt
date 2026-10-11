@@ -1,0 +1,5 @@
+bafser==2.12.2
+bafser-tgapi==1.12.1
+portalocker==4.4.0
+tzdata==2026.5
+waitress==3.0.2

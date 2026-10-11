@@ -1,0 +1,4 @@
+bot_token = PUT_YOUR_BOT_TOKEN_HERE
+bot_name = @YourQueueBot
+webhook_token = PUT_RANDOM_SECRET_HERE
+url = https://example.com/

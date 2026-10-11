@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+build/
+dist/
+.env
+storage/
+.pytest_cache/
+.ruff_cache/
+config.txt
+config_dev.txt
